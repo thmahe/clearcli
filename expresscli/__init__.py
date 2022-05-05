@@ -47,7 +47,6 @@ class ExpressCli:
 
     def big_bang(self):
         args = self._cli.parse_args()
-        print(args.__dict__)
         args.get('_EXPRESSCLI_CALLABLE')(**args)
 
     def _from_dict_descriptor(self, descriptor, cli: argparse.ArgumentParser, depth=0):

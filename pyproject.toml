@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "expresscli"
+version = "0.1.0"
+description = ""
+authors = ["Thomas Mahé <contact@tmahe.dev>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+tox = "^3.20.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.extras]
+test = ["python3 -m unittest discover -v -s tests -t tests -p '*.py'"]
