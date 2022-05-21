@@ -17,7 +17,6 @@ If not, see <https://www.gnu.org/licenses/>.
 import argparse
 import contextlib
 import io
-import unittest.mock
 from unittest import TestCase
 from expresscli import ExpressCliCommand, ExpressCli
 import expresscli.mock
