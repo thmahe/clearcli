@@ -14,26 +14,12 @@ You should have received a copy of the GNU General Public License along with thi
 If not, see <https://www.gnu.org/licenses/>.
 """
 
-import abc
 import argparse
 import inspect
 import os
 import sys
 
-
-class ExpressCliCommand(abc.ABC):
-    _reserved_arguments: set[str] = {"_EXPRESSCLI_CALLABLE"}
-
-    def __init__(self, *args, **kwargs):
-        try:
-            self.filtered_args = {k: kwargs.get(k) for k in set(kwargs.keys()) - self._reserved_arguments}
-        except AttributeError and IndexError:
-            pass
-
-    @staticmethod
-    @abc.abstractmethod
-    def populate_args(parser: argparse.ArgumentParser):
-        pass
+from .commands import populate_args, ExpressCliCommand
 
 
 class ExpressCli:
@@ -67,13 +53,13 @@ class ExpressCli:
                                                                                 0][:80],
                                                                             description=inspect.getdoc(sub_descriptor))
                 except TypeError:
-                    parser: argparse.ArgumentParser = sub_parser.add_parser(command_name, help='sub-command')
+                    parser: argparse.ArgumentParser = sub_parser.add_parser(command_name, help='')
                 self._from_dict_descriptor(sub_descriptor, parser, depth + 1)
 
-        elif issubclass(descriptor, ExpressCliCommand):
+        elif callable(ExpressCliCommand):
             cli.help = "test"
             cli.add_argument('--_EXPRESSCLI_CALLABLE', required=False, default=descriptor, help=argparse.SUPPRESS)
-            descriptor.populate_args(cli)
+            populate_args(descriptor, cli)
 
         else:
             raise TypeError('ExpressCli descriptor must be a dictionary')

@@ -15,17 +15,18 @@ If not, see <https://www.gnu.org/licenses/>.
 """
 
 import argparse
-import sys
+import contextlib
+import io
 import unittest.mock
 from unittest import TestCase
 from expresscli import ExpressCliCommand, ExpressCli
+import expresscli.mock
 
 
 class TestExpressCli(TestCase):
 
-    @unittest.mock.patch('argparse._sys.argv', ['prog', '-h'])
+    @expresscli.mock.with_arguments('-h', '--test')
     def test_from_dict_descriptor(self):
-
         class HelloWorld(ExpressCliCommand):
 
             @staticmethod
@@ -33,12 +34,24 @@ class TestExpressCli(TestCase):
                 pass
 
         descriptor = {
-            "hello-world": HelloWorld
+            "hello-world": HelloWorld,
+            "test": lambda x: print(x)
         }
 
-        cli = ExpressCli(descriptor)
+        cli = ExpressCli(descriptor, prog="test-prog")
 
-        with self.assertRaises(SystemExit) as ctx:
-            cli.big_bang()
+        f = io.StringIO()
+        with contextlib.redirect_stdout(f):
+            with self.assertRaises(SystemExit) as ctx:
+                cli.big_bang()
+        self.assertEqual("""usage: test-prog [-h] {hello-world,test} ...
 
+options:
+  -h, --help          show this help message and exit
+
+commands:
+  {hello-world,test}
+    hello-world       Helper class that provides a standard way to create an ABC using
+    test
+""", f.getvalue())
         self.assertEqual(0, ctx.exception.code)
