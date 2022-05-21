@@ -18,7 +18,7 @@ import sys
 from unittest.mock import patch
 
 
-def with_arguments(*args, **kwargs):
+def with_arguments(*args):
     arguments = list(args)
     arguments.insert(0, 'prog_name')
 

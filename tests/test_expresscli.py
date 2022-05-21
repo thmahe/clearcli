@@ -24,7 +24,43 @@ import expresscli.mock
 
 class TestExpressCli(TestCase):
 
-    @expresscli.mock.with_arguments('-h', '--test')
+    @expresscli.mock.with_arguments('-h')
+    def test_empty_descriptor(self):
+        cli = ExpressCli(descriptor={}, prog="empty-prog")
+
+        f = io.StringIO()
+        with contextlib.redirect_stdout(f):
+            with self.assertRaises(SystemExit) as ctx:
+                cli.big_bang()
+        expected = """\
+usage: empty-prog [-h]
+
+options:
+  -h, --help  show this help message and exit
+"""
+
+        self.assertEqual(expected, f.getvalue())
+        self.assertEqual(0, ctx.exception.code)
+
+    @expresscli.mock.with_arguments()
+    def test_empty_args_show_help(self):
+        cli = ExpressCli(descriptor={}, prog="no-arg-prog")
+
+        f = io.StringIO()
+        with contextlib.redirect_stdout(f):
+            with self.assertRaises(SystemExit) as ctx:
+                cli.big_bang()
+        expected = """\
+usage: no-arg-prog [-h]
+
+options:
+  -h, --help  show this help message and exit
+"""
+
+        self.assertEqual(expected, f.getvalue())
+        self.assertEqual(0, ctx.exception.code)
+
+    @expresscli.mock.with_arguments('-h')
     def test_from_dict_descriptor(self):
         class HelloWorld(ExpressCliCommand):
 

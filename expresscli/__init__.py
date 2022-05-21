@@ -19,21 +19,28 @@ import inspect
 import os
 import sys
 
-from .commands import populate_args, ExpressCliCommand
+from .commands import _populate_args_handler, ExpressCliCommand
 
 
 class ExpressCli:
 
-    def __init__(self, descriptor, prog=os.path.basename(sys.argv[0])):
+    def __init__(self, descriptor: dict, prog: str = os.path.basename(sys.argv[0])):
         self._descriptor = descriptor
         self._cli = argparse.ArgumentParser(prog=prog, formatter_class=argparse.RawTextHelpFormatter)
 
         if isinstance(descriptor, dict):
             self._from_dict_descriptor(self._descriptor, self._cli)
+        else:
+            raise TypeError('ExpressCli descriptor must be of type <dict>')
 
     def big_bang(self):
         args = self._cli.parse_args()
-        args.get('_EXPRESSCLI_CALLABLE')(**args)
+
+        if len(args.__dict__.keys()) == 0:
+            self._cli.print_help()
+            exit(0)
+
+        args.get('_EXPRESSCLI_CALLABLE')(args.__dict__)
 
     def _from_dict_descriptor(self, descriptor, cli: argparse.ArgumentParser, depth=0):
         if isinstance(descriptor, dict):
@@ -42,24 +49,25 @@ class ExpressCli:
             if len(descriptor.keys()) > 1:
                 title = title + "s"
 
-            sub_parser = cli.add_subparsers(title=title)
-            for command_name, sub_descriptor in descriptor.items():
-                try:
-                    issubclass(sub_descriptor, ExpressCliCommand)
-                    parser: argparse.ArgumentParser = sub_parser.add_parser(command_name,
-                                                                            formatter_class=argparse.RawTextHelpFormatter,
-                                                                            help=
-                                                                            inspect.getdoc(sub_descriptor).split('\n')[
-                                                                                0][:80],
-                                                                            description=inspect.getdoc(sub_descriptor))
-                except TypeError:
-                    parser: argparse.ArgumentParser = sub_parser.add_parser(command_name, help='')
-                self._from_dict_descriptor(sub_descriptor, parser, depth + 1)
+            if len(descriptor.keys()) > 0:
+                sub_parser = cli.add_subparsers(title=title)
+                for command_name, sub_descriptor in descriptor.items():
+                    try:
+                        issubclass(sub_descriptor, ExpressCliCommand)
+                        parser = sub_parser.add_parser(command_name,
+                                                       formatter_class=argparse.RawTextHelpFormatter,
+                                                       help=
+                                                       inspect.getdoc(sub_descriptor).split('\n')[
+                                                           0][:80],
+                                                       description=inspect.getdoc(sub_descriptor))
+                    except TypeError:
+                        parser: argparse.ArgumentParser = sub_parser.add_parser(command_name, help='')
+                    self._from_dict_descriptor(sub_descriptor, parser, depth + 1)
 
         elif callable(ExpressCliCommand):
             cli.help = "test"
             cli.add_argument('--_EXPRESSCLI_CALLABLE', required=False, default=descriptor, help=argparse.SUPPRESS)
-            populate_args(descriptor, cli)
+            _populate_args_handler(descriptor, cli)
 
         else:
             raise TypeError('ExpressCli descriptor must be a dictionary')

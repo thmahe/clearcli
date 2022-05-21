@@ -19,7 +19,7 @@ import argparse
 import inspect
 
 
-def populate_args(command_item, cli):
+def _populate_args_handler(command_item, cli):
     try:
         if issubclass(command_item, ExpressCliCommand):
             command_item.populate_args(cli)
@@ -36,7 +36,7 @@ def populate_args(command_item, cli):
 class ExpressCliCommand(abc.ABC):
     _reserved_arguments: set[str] = {"_EXPRESSCLI_CALLABLE"}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         try:
             self.filtered_args = {k: kwargs.get(k) for k in set(kwargs.keys()) - self._reserved_arguments}
         except AttributeError and IndexError:
