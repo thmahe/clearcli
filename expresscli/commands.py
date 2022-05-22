@@ -21,12 +21,11 @@ import inspect
 
 def _populate_args_handler(command_item, cli):
     try:
-        if issubclass(command_item, ExpressCliCommand):
+        if ExpressCliCommand in inspect.getmro(command_item):
             command_item.populate_args(cli)
             return
-    except TypeError:
+    except AttributeError:
         pass
-
     # Handle Lambdas
     if command_item.__code__.co_name == "<lambda>":
         for item in inspect.signature(command_item).parameters.keys():
@@ -37,12 +36,9 @@ class ExpressCliCommand(abc.ABC):
     _reserved_arguments: set[str] = {"_EXPRESSCLI_CALLABLE"}
 
     def __init__(self, **kwargs):
-        try:
-            self.filtered_args = {k: kwargs.get(k) for k in set(kwargs.keys()) - self._reserved_arguments}
-        except AttributeError and IndexError:
-            pass
+        self.filtered_args = {k: kwargs.get(k) for k in set(kwargs.keys()) - self._reserved_arguments}
 
     @staticmethod
     @abc.abstractmethod
     def populate_args(parser: argparse.ArgumentParser):
-        pass
+        pass  # pragma: nocover
