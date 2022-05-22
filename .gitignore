@@ -3,3 +3,9 @@ dist/
 poetry.lock
 .idea/
 /docs/build/
+
+site/
+
+cobertura.xml
+
+.coverage

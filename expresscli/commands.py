@@ -20,16 +20,19 @@ import inspect
 
 
 def _populate_args_handler(command_item, cli):
-    try:
+    if inspect.isclass(command_item):
         if ExpressCliCommand in inspect.getmro(command_item):
             command_item.populate_args(cli)
-            return
-    except AttributeError:
-        pass
+        else:
+            raise TypeError(f'Classes is descriptor must be of type <ExpressCliCommand>, '
+                            f'Found <{command_item.__name__}>')
     # Handle Lambdas
-    if command_item.__code__.co_name == "<lambda>":
+    elif command_item.__code__.co_name == "<lambda>":
         for item in inspect.signature(command_item).parameters.keys():
             cli.add_argument(item)
+    else:
+        raise TypeError(f'Supported types for descriptor items {{<lambda>, <ExpressCliCommand>}}, '
+                        f'Found <{command_item.__name__}>')
 
 
 class ExpressCliCommand(abc.ABC):

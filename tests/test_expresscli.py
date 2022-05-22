@@ -55,6 +55,29 @@ options:
             ExpressCli(descriptor=descriptor, prog="empty-prog")
         self.assertEqual("ExpressCli sub-descriptor must be of type <dict>", str(ctx.exception))
 
+    def test_incorrect_sub_descriptor_class(self):
+        class NotCommand(object):
+            def __init__(self):
+                print(None)
+
+        descriptor = {
+            "command": NotCommand
+        }
+        with self.assertRaises(TypeError) as ctx:
+            ExpressCli(descriptor=descriptor, prog="empty-prog")
+        self.assertEqual("Classes is descriptor must be of type <ExpressCliCommand>, Found <NotCommand>", str(ctx.exception))
+
+    def test_incorrect_sub_descriptor_unsuported_type(self):
+        def function():
+            print("test")
+
+        descriptor = {
+            "command": function
+        }
+        with self.assertRaises(TypeError) as ctx:
+            ExpressCli(descriptor=descriptor, prog="empty-prog")
+        self.assertEqual("Supported types for descriptor items {<lambda>, <ExpressCliCommand>}, Found <function>", str(ctx.exception))
+
     @expresscli.mock.with_arguments()
     def test_empty_args_show_help(self):
         cli = ExpressCli(descriptor={}, prog="no-arg-prog")
