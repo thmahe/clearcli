@@ -1,0 +1,11 @@
+dist/
+**/__pycache__/
+poetry.lock
+.idea/
+/docs/build/
+
+site/
+
+cobertura.xml
+
+.coverage

@@ -1,0 +1,15 @@
+site_name: My Docs
+
+nav:
+    - FIRST STEPS:
+        - install_guide.md
+
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - yaml
+        - python
+
+markdown_extensions:
+  - admonition
